@@ -1,0 +1,72 @@
+@model IList<Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel>
+
+@{
+    Layout = "_AdminLayout";
+    ViewBag.PageTitle = "Announcement Bar";
+}
+
+<div class="content-header clearfix">
+    <h1 class="float-left">
+        Announcement Bar
+    </h1>
+    <div class="float-right">
+        <a href="@Url.Action("Create", "AnnouncementBar", new { area = "Admin" })" class="btn btn-primary">
+            Yeni Duyuru Ekle
+        </a>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card card-default">
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Text</th>
+                            <th>Color</th>
+                            <th>Display Order</th>
+                            <th>Is Active</th>
+                            <th style="width: 180px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Text</td>
+                                    <td>@item.Color</td>
+                                    <td>@item.DisplayOrder</td>
+                                    <td>@item.IsActive</td>
+                                    <td>
+                                        <a href="@Url.Action("Edit", "AnnouncementBar", new { area = "Admin", id = item.Id })"
+                                           class="btn btn-warning btn-sm">
+                                            Düzenle
+                                        </a>
+
+                                        <form action="@Url.Action("Delete", "AnnouncementBar", new { area = "Admin", id = item.Id })"
+                                              method="post"
+                                              style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                Sil
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5">Kayıt bulunamadı.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,11 @@
+{
+  "Group": "Widgets",
+  "FriendlyName": "Announcement Bar Widget",
+  "SystemName": "Widgets.AnnouncementBar",
+  "Version": "1.00",
+  "SupportedVersions": [ "4.50" ],
+  "Author": "Eda",
+  "DisplayOrder": 0,
+  "FileName": "Nop.Plugin.Widgets.AnnouncementBar.dll",
+  "Description": "Homepage top announcement bar widget plugin."
+}
