@@ -7,7 +7,6 @@
             width: 100%;
             overflow: hidden;
             background: #111111;
-            color: #ffffff;
             height: 56px;
             line-height: 56px;
             position: relative;
@@ -55,7 +54,7 @@
         <div class="announcement-bar-track">
             @for (var i = 0; i < Model.Items.Count; i++)
             {
-                <span class="announcement-bar-item" style="color:@Model.Items[i].Color;">
+                <span class="announcement-bar-item" style="color: @(Model.Items[i].Color);">
                     @Model.Items[i].Text
                 </span>
 

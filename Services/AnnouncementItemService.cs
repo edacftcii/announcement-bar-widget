@@ -41,21 +41,33 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Services
 
         public async Task<AnnouncementItem> GetByIdAsync(int id)
         {
+            if (id <= 0)
+                return null;
+
             return await _announcementItemRepository.GetByIdAsync(id);
         }
 
         public async Task InsertAsync(AnnouncementItem item)
         {
+            if (item == null)
+                return;
+
             await _announcementItemRepository.InsertAsync(item);
         }
 
         public async Task UpdateAsync(AnnouncementItem item)
         {
+            if (item == null)
+                return;
+
             await _announcementItemRepository.UpdateAsync(item);
         }
 
         public async Task DeleteAsync(AnnouncementItem item)
         {
+            if (item == null)
+                return;
+
             await _announcementItemRepository.DeleteAsync(item);
         }
 

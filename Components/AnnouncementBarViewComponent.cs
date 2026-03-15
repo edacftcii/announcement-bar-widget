@@ -1,10 +1,9 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Nop.Data;
-using Nop.Plugin.Widgets.AnnouncementBar.Domain;
 using Nop.Plugin.Widgets.AnnouncementBar.Models;
+using Nop.Plugin.Widgets.AnnouncementBar.Services;
 using Nop.Web.Framework.Components;
+using Nop.Web.Framework.Infrastructure;
 
 namespace Nop.Plugin.Widgets.AnnouncementBar.Components
 {
@@ -12,15 +11,15 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Components
     {
         #region Fields
 
-        private readonly IRepository<AnnouncementItem> _announcementItemRepository;
+        private readonly IAnnouncementItemService _announcementItemService;
 
         #endregion
 
         #region Ctor
 
-        public AnnouncementBarViewComponent(IRepository<AnnouncementItem> announcementItemRepository)
+        public AnnouncementBarViewComponent(IAnnouncementItemService announcementItemService)
         {
-            _announcementItemRepository = announcementItemRepository;
+            _announcementItemService = announcementItemService;
         }
 
         #endregion
@@ -29,24 +28,30 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Components
 
         public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
         {
-            var items = await _announcementItemRepository.GetAllAsync(query =>
-                query.Where(x => x.IsActive)
-                     .OrderBy(x => x.DisplayOrder)
-                     .ThenBy(x => x.Id));
+            if (string.IsNullOrWhiteSpace(widgetZone) || widgetZone != PublicWidgetZones.HomepageTop)
+                return Content(string.Empty);
 
-            var activeItems = items.ToList();
+            if (additionalData != null)
+                ViewData["AdditionalData"] = additionalData;
 
-            if (!activeItems.Any())
+            var activeItems = await _announcementItemService.GetAllActiveAsync();
+
+            if (activeItems == null || activeItems.Count == 0)
                 return Content(string.Empty);
 
             var model = new AnnouncementBarModel();
 
             foreach (var item in activeItems)
             {
+                var color = item.Color?.Trim();
+
+                if (string.IsNullOrWhiteSpace(color))
+                    color = "#ffffff";
+
                 model.Items.Add(new AnnouncementBarItemModel
                 {
                     Text = item.Text,
-                    Color = string.IsNullOrWhiteSpace(item.Color) ? "#ffffff" : item.Color
+                    Color = color
                 });
             }
 

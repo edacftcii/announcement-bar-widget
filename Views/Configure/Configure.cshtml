@@ -1,72 +1,96 @@
-@model IList<Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel>
+@model Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemSearchModel
+@using Nop.Web.Framework.Models.DataTables
+@inject Nop.Services.Localization.ILocalizationService localizationService
 
 @{
     Layout = "_AdminLayout";
-    ViewBag.PageTitle = "Announcement Bar";
+
+    var pageTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Menu.Title");
+    var addNewText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Button.AddNew");
+    var cardListTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Card.List");
+
+    var fieldText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Text");
+    var fieldColor = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Color");
+    var fieldDisplayOrder = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.DisplayOrder");
+    var fieldIsActive = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.IsActive");
+
+    var editText = await localizationService.GetResourceAsync("Admin.Common.Edit");
+    var deleteText = await localizationService.GetResourceAsync("Admin.Common.Delete");
+
+    ViewBag.PageTitle = pageTitle;
 }
 
 <div class="content-header clearfix">
     <h1 class="float-left">
-        Announcement Bar
+        @pageTitle
     </h1>
     <div class="float-right">
         <a href="@Url.Action("Create", "AnnouncementBar", new { area = "Admin" })" class="btn btn-primary">
-            Yeni Duyuru Ekle
+            <i class="fas fa-plus-square"></i>
+            @addNewText
         </a>
     </div>
 </div>
 
 <section class="content">
     <div class="container-fluid">
-        <div class="card card-default">
-            <div class="card-body">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Text</th>
-                            <th>Color</th>
-                            <th>Display Order</th>
-                            <th>Is Active</th>
-                            <th style="width: 180px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>@item.Text</td>
-                                    <td>@item.Color</td>
-                                    <td>@item.DisplayOrder</td>
-                                    <td>@item.IsActive</td>
-                                    <td>
-                                        <a href="@Url.Action("Edit", "AnnouncementBar", new { area = "Admin", id = item.Id })"
-                                           class="btn btn-warning btn-sm">
-                                            Düzenle
-                                        </a>
+        <nop-cards id="announcement-bar-cards">
+            <nop-card asp-name="announcement-bar-list"
+                      asp-icon="fas fa-bullhorn"
+                      asp-title="@cardListTitle"
+                      asp-hide-block-attribute-name="AnnouncementBarList.Hide"
+                      asp-hide="false"
+                      asp-advanced="false">
 
-                                        <form action="@Url.Action("Delete", "AnnouncementBar", new { area = "Admin", id = item.Id })"
-                                              method="post"
-                                              style="display:inline;">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Sil
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
+                <div class="card-body">
+                    @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                        Name = "announcement-bar-grid",
+                        UrlRead = new DataUrl("~/Admin/AnnouncementBar/List"),
+                        UrlDelete = new DataUrl("~/Admin/AnnouncementBar/Delete"),
+                        Length = Model.PageSize,
+                        LengthMenu = Model.AvailablePageSizes,
+                        ColumnCollection = new List<ColumnProperty>
+                        {
+                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Text))
+                            {
+                                Title = fieldText
+                            },
+                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Color))
+                            {
+                                Title = fieldColor
+                            },
+                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.DisplayOrder))
+                            {
+                                Title = fieldDisplayOrder,
+                                Width = "120"
+                            },
+                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.IsActive))
+                            {
+                                Title = fieldIsActive,
+                                Width = "120",
+                                ClassName = NopColumnClassDefaults.CenterAll,
+                                Render = new RenderBoolean()
+                            },
+                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Id))
+                            {
+                                Title = editText,
+                                Width = "100",
+                                ClassName = NopColumnClassDefaults.Button,
+                                Render = new RenderButtonEdit(new DataUrl("~/Admin/AnnouncementBar/Edit/"))
+                            },
+                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Id))
+                            {
+                                Title = deleteText,
+                                Width = "100",
+                                ClassName = NopColumnClassDefaults.Button,
+                                Render = new RenderButtonRemove(deleteText)
                             }
                         }
-                        else
-                        {
-                            <tr>
-                                <td colspan="5">Kayıt bulunamadı.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    })
+                </div>
+
+            </nop-card>
+        </nop-cards>
     </div>
 </section>

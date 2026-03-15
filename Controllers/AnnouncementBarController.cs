@@ -1,9 +1,9 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Nop.Data;
-using Nop.Plugin.Widgets.AnnouncementBar.Domain;
+using Nop.Plugin.Widgets.AnnouncementBar.Factories;
 using Nop.Plugin.Widgets.AnnouncementBar.Models;
+using Nop.Plugin.Widgets.AnnouncementBar.Services;
+using Nop.Services.Localization;
 using Nop.Web.Framework;
 using Nop.Web.Framework.Controllers;
 using Nop.Web.Framework.Mvc.Filters;
@@ -17,15 +17,22 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Controllers
     {
         #region Fields
 
-        private readonly IRepository<AnnouncementItem> _announcementItemRepository;
+        private readonly IAnnouncementItemService _announcementItemService;
+        private readonly IAnnouncementModelFactory _announcementModelFactory;
+        private readonly ILocalizationService _localizationService;
 
         #endregion
 
         #region Ctor
 
-        public AnnouncementBarController(IRepository<AnnouncementItem> announcementItemRepository)
+        public AnnouncementBarController(
+            IAnnouncementItemService announcementItemService,
+            IAnnouncementModelFactory announcementModelFactory,
+            ILocalizationService localizationService)
         {
-            _announcementItemRepository = announcementItemRepository;
+            _announcementItemService = announcementItemService;
+            _announcementModelFactory = announcementModelFactory;
+            _localizationService = localizationService;
         }
 
         #endregion
@@ -34,142 +41,121 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Controllers
 
         public async Task<IActionResult> Configure()
         {
-            var items = await _announcementItemRepository.GetAllAsync(query =>
-                query.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id));
-
-            var model = items.Select(x => new AnnouncementItemModel
-            {
-                Id = x.Id,
-                Text = x.Text,
-                Color = x.Color,
-                DisplayOrder = x.DisplayOrder,
-                IsActive = x.IsActive
-            }).ToList();
-
-            return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/Configure.cshtml", model);
+            var searchModel = await _announcementModelFactory.PrepareSearchModelAsync(new AnnouncementItemSearchModel());
+            return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/Configure.cshtml", searchModel);
         }
 
-        public IActionResult Create()
+        [HttpPost]
+        public async Task<IActionResult> List(AnnouncementItemSearchModel searchModel)
         {
-            var model = new AnnouncementItemModel
-            {
-                IsActive = true,
-                DisplayOrder = 1
-            };
+            var model = await _announcementModelFactory.PrepareListModelAsync(searchModel);
+            return Json(model);
+        }
 
+        public async Task<IActionResult> Create()
+        {
+            var model = await _announcementModelFactory.PrepareModelAsync(null);
             return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
         }
 
         [HttpPost]
-public async Task<IActionResult> CreatePost()
-{
-    var text = Request.Form["Text"].ToString();
-    var color = Request.Form["Color"].ToString();
-    var displayOrderValue = Request.Form["DisplayOrder"].ToString();
-    var isActiveValue = Request.Form["IsActive"].ToString();
+        public async Task<IActionResult> CreatePost(AnnouncementItemModel model)
+        {
+            if (!ModelState.IsValid)
+                return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
 
-    int.TryParse(displayOrderValue, out var displayOrder);
-    var isActive = isActiveValue.Contains("true") || isActiveValue.Contains("on");
+            if (string.IsNullOrWhiteSpace(model.Text))
+            {
+                ModelState.AddModelError(
+                    nameof(model.Text),
+                    await _localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Validation.TextRequired"));
 
-    var model = new AnnouncementItemModel
-    {
-        Text = text,
-        Color = color,
-        DisplayOrder = displayOrder,
-        IsActive = isActive
-    };
+                return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
+            }
 
-    if (string.IsNullOrWhiteSpace(text))
-    {
-        ModelState.AddModelError(nameof(model.Text), "Text alanı zorunludur.");
-        return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
-    }
+            if (model.DisplayOrder < 0)
+            {
+                ModelState.AddModelError(
+                    nameof(model.DisplayOrder),
+                    await _localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Validation.DisplayOrderInvalid"));
 
-    var entity = new AnnouncementItem
-    {
-        Text = text,
-        Color = color,
-        DisplayOrder = displayOrder,
-        IsActive = isActive
-    };
+                return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
+            }
 
-    await _announcementItemRepository.InsertAsync(entity);
+            var entity = await _announcementModelFactory.PrepareEntityAsync(model);
 
-    return RedirectToAction(nameof(Configure));
-}
+            await _announcementItemService.InsertAsync(entity);
+
+            return RedirectToAction(nameof(Configure));
+        }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var entity = await _announcementItemRepository.GetByIdAsync(id);
+            var entity = await _announcementItemService.GetByIdAsync(id);
 
             if (entity == null)
                 return RedirectToAction(nameof(Configure));
 
-            var model = new AnnouncementItemModel
-            {
-                Id = entity.Id,
-                Text = entity.Text,
-                Color = entity.Color,
-                DisplayOrder = entity.DisplayOrder,
-                IsActive = entity.IsActive
-            };
+            var model = await _announcementModelFactory.PrepareModelAsync(entity);
 
             return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
         }
 
         [HttpPost]
-public async Task<IActionResult> EditPost()
-{
-    var idValue = Request.Form["Id"].ToString();
-    var text = Request.Form["Text"].ToString();
-    var color = Request.Form["Color"].ToString();
-    var displayOrderValue = Request.Form["DisplayOrder"].ToString();
-    var isActiveValue = Request.Form["IsActive"].ToString();
-
-    int.TryParse(idValue, out var id);
-    int.TryParse(displayOrderValue, out var displayOrder);
-    var isActive = isActiveValue.Contains("true") || isActiveValue.Contains("on");
-
-    var model = new AnnouncementItemModel
-    {
-        Id = id,
-        Text = text,
-        Color = color,
-        DisplayOrder = displayOrder,
-        IsActive = isActive
-    };
-
-    if (string.IsNullOrWhiteSpace(text))
-    {
-        ModelState.AddModelError(nameof(model.Text), "Text alanı zorunludur.");
-        return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
-    }
-
-    var entity = await _announcementItemRepository.GetByIdAsync(id);
-
-    if (entity == null)
-        return RedirectToAction(nameof(Configure));
-
-    entity.Text = text;
-    entity.Color = color;
-    entity.DisplayOrder = displayOrder;
-    entity.IsActive = isActive;
-
-    await _announcementItemRepository.UpdateAsync(entity);
-
-    return RedirectToAction(nameof(Configure));
-}
-
-        [HttpPost]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> EditPost(AnnouncementItemModel model)
         {
-            var entity = await _announcementItemRepository.GetByIdAsync(id);
+            if (model.Id <= 0)
+                return RedirectToAction(nameof(Configure));
 
-            if (entity != null)
-                await _announcementItemRepository.DeleteAsync(entity);
+            if (!ModelState.IsValid)
+                return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
+
+            if (string.IsNullOrWhiteSpace(model.Text))
+            {
+                ModelState.AddModelError(
+                    nameof(model.Text),
+                    await _localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Validation.TextRequired"));
+
+                return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
+            }
+
+            if (model.DisplayOrder < 0)
+            {
+                ModelState.AddModelError(
+                    nameof(model.DisplayOrder),
+                    await _localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Validation.DisplayOrderInvalid"));
+
+                return View("~/Plugins/Widgets.AnnouncementBar/Views/Configure/CreateOrEdit.cshtml", model);
+            }
+
+            var entity = await _announcementItemService.GetByIdAsync(model.Id);
+
+            if (entity == null)
+                return RedirectToAction(nameof(Configure));
+
+            entity = await _announcementModelFactory.PrepareEntityAsync(model, entity);
+
+            await _announcementItemService.UpdateAsync(entity);
 
             return RedirectToAction(nameof(Configure));
         }
+
+        
+[HttpPost]
+public async Task<IActionResult> Delete(int id)
+{
+    if (id <= 0)
+        return Json(new { Result = false });
+
+    var entity = await _announcementItemService.GetByIdAsync(id);
+
+    if (entity == null)
+        return Json(new { Result = false });
+
+    await _announcementItemService.DeleteAsync(entity);
+
+    return Json(new { Result = true });
+}
 
         #endregion
     }

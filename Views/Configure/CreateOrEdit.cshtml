@@ -1,9 +1,26 @@
 @model Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel
+@inject Nop.Services.Localization.ILocalizationService localizationService
 
 @{
     Layout = "_AdminLayout";
-    ViewBag.PageTitle = Model.Id > 0 ? "Duyuru Düzenle" : "Yeni Duyuru";
-    var formAction = Model.Id > 0 ? "/Admin/AnnouncementBar/EditPost" : "/Admin/AnnouncementBar/CreatePost";
+
+    var pageTitleCreate = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.PageTitle.Create");
+    var pageTitleEdit = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.PageTitle.Edit");
+    var cardInfoTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Card.Info");
+
+    var fieldText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Text");
+    var fieldColor = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Color");
+    var fieldDisplayOrder = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.DisplayOrder");
+    var fieldIsActive = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.IsActive");
+
+    var saveText = await localizationService.GetResourceAsync("Admin.Common.Save");
+    var backToListText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Button.BackToList");
+
+    ViewBag.PageTitle = Model.Id > 0 ? pageTitleEdit : pageTitleCreate;
+
+    var formAction = Model.Id > 0
+        ? Url.Action("EditPost", "AnnouncementBar", new { area = "Admin" })
+        : Url.Action("CreatePost", "AnnouncementBar", new { area = "Admin" });
 }
 
 <form action="@formAction" method="post">
@@ -12,48 +29,80 @@
 
     <div class="content-header clearfix">
         <h1 class="float-left">
-            @(Model.Id > 0 ? "Duyuru Düzenle" : "Yeni Duyuru")
+            @(Model.Id > 0 ? pageTitleEdit : pageTitleCreate)
         </h1>
         <div class="float-right">
             <button type="submit" class="btn btn-primary">
-                Kaydet
+                <i class="far fa-save"></i>
+                @saveText
             </button>
-            <a href="/Admin/AnnouncementBar/Configure" class="btn btn-secondary">
-                Geri Dön
+            <a href="@Url.Action("Configure", "AnnouncementBar", new { area = "Admin" })" class="btn btn-default">
+                <i class="fas fa-arrow-left"></i>
+                @backToListText
             </a>
         </div>
     </div>
 
     <section class="content">
         <div class="container-fluid">
-            <div class="card card-default">
-                <div class="card-body">
+            <nop-cards id="announcement-bar-item-cards">
+                <nop-card asp-name="announcement-bar-item-info"
+                          asp-icon="fas fa-info-circle"
+                          asp-title="@cardInfoTitle"
+                          asp-hide-block-attribute-name="AnnouncementBarItemInfo.Hide"
+                          asp-hide="false"
+                          asp-advanced="false">
 
-                    <div class="form-group">
-                        <label for="Text">Text</label>
-                        <input id="Text" name="Text" class="form-control" value="@Model.Text" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Color">Color</label>
-                        <input id="Color" name="Color" class="form-control" value="@Model.Color" placeholder="#28a745" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="DisplayOrder">Display Order</label>
-                        <input id="DisplayOrder" name="DisplayOrder" type="number" class="form-control" value="@Model.DisplayOrder" />
-                    </div>
-
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input type="hidden" name="IsActive" value="false" />
-                            <input id="IsActive" name="IsActive" type="checkbox" class="form-check-input" value="true" @(Model.IsActive ? "checked=\"checked\"" : "") />
-                            <label for="IsActive" class="form-check-label">Is Active</label>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <label for="Text">@fieldText</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input id="Text" name="Text" class="form-control" value="@Model.Text" />
+                            <span asp-validation-for="Text"></span>
                         </div>
                     </div>
 
-                </div>
-            </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <label for="Color">@fieldColor</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input id="Color"
+                                   name="Color"
+                                   class="form-control"
+                                   value="@Model.Color"
+                                   placeholder="#28a745" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <label for="DisplayOrder">@fieldDisplayOrder</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input id="DisplayOrder"
+                                   name="DisplayOrder"
+                                   type="number"
+                                   class="form-control"
+                                   value="@Model.DisplayOrder" />
+                            <span asp-validation-for="DisplayOrder"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <label>@fieldIsActive</label>
+                        </div>
+                        <div class="col-md-9">
+                            <div style="padding-top: 8px;">
+                                @Html.CheckBoxFor(m => m.IsActive)
+                            </div>
+                        </div>
+                    </div>
+
+                </nop-card>
+            </nop-cards>
         </div>
     </section>
 </form>

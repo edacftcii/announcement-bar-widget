@@ -5,14 +5,20 @@ using Nop.Plugin.Widgets.AnnouncementBar.Domain;
 
 namespace Nop.Plugin.Widgets.AnnouncementBar.Data
 {
-    [NopMigration("2026/03/09 10:00:00:0000000", "Widgets.AnnouncementBar base schema", MigrationProcessType.Installation)]
-    public class InstallAnnouncementBarTables : AutoReversingMigration
+    [NopMigration("2026/03/09 10:00:00:0000000", "Widgets.AnnouncementBar schema", MigrationProcessType.Installation)]
+    public class InstallAnnouncementBarTables : MigrationBase
     {
         #region Methods
 
         public override void Up()
         {
-            Create.TableFor<AnnouncementItem>();
+            if (!Schema.Table(nameof(AnnouncementItem)).Exists())
+                Create.TableFor<AnnouncementItem>();
+        }
+
+         public override void Down()
+        {
+            
         }
 
         #endregion
