@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
+using Nop.Plugin.Widgets.AnnouncementBar.Settings;
 using Nop.Services.Cms;
+using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Plugins;
 using Nop.Services.Security;
@@ -18,6 +20,7 @@ namespace Nop.Plugin.Widgets.AnnouncementBar
         private readonly IWebHelper _webHelper;
         private readonly IPermissionService _permissionService;
         private readonly ILocalizationService _localizationService;
+        private readonly ISettingService _settingService;
 
         #endregion
 
@@ -26,11 +29,13 @@ namespace Nop.Plugin.Widgets.AnnouncementBar
         public AnnouncementBarPlugin(
             IWebHelper webHelper,
             IPermissionService permissionService,
-            ILocalizationService localizationService)
+            ILocalizationService localizationService,
+            ISettingService settingService)
         {
             _webHelper = webHelper;
             _permissionService = permissionService;
             _localizationService = localizationService;
+            _settingService = settingService;
         }
 
         #endregion
@@ -41,6 +46,15 @@ namespace Nop.Plugin.Widgets.AnnouncementBar
 
         #endregion
 
+        #region Configuration
+
+        public override string GetConfigurationPageUrl()
+        {
+            return $"{_webHelper.GetStoreLocation()}Admin/AnnouncementBar/Configure";
+        }
+
+        #endregion
+
         #region Install / Uninstall
 
         public override async Task InstallAsync()
@@ -48,10 +62,12 @@ namespace Nop.Plugin.Widgets.AnnouncementBar
             await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
                 ["Plugins.Widgets.AnnouncementBar.Menu.Title"] = "Announcement Bar",
-                ["Plugins.Widgets.AnnouncementBar.Menu.Configure"] = "Manage Announcements",
+                ["Plugins.Widgets.AnnouncementBar.Button.Configure"] = "Configure",
+                ["Plugins.Widgets.AnnouncementBar.Menu.ManageItems"] = "Manage Announcements",
 
                 ["Plugins.Widgets.AnnouncementBar.Fields.Text"] = "Text",
                 ["Plugins.Widgets.AnnouncementBar.Fields.Color"] = "Color",
+                ["Plugins.Widgets.AnnouncementBar.Fields.LinkUrl"] = "Link URL",
                 ["Plugins.Widgets.AnnouncementBar.Fields.DisplayOrder"] = "Display Order",
                 ["Plugins.Widgets.AnnouncementBar.Fields.IsActive"] = "Is Active",
                 ["Plugins.Widgets.AnnouncementBar.Fields.Actions"] = "Actions",
@@ -61,6 +77,7 @@ namespace Nop.Plugin.Widgets.AnnouncementBar
 
                 ["Plugins.Widgets.AnnouncementBar.Card.List"] = "Duyuru Listesi",
                 ["Plugins.Widgets.AnnouncementBar.Card.Info"] = "Duyuru Bilgileri",
+                ["Plugins.Widgets.AnnouncementBar.Card.Settings"] = "Announcement Bar Settings",
 
                 ["Plugins.Widgets.AnnouncementBar.PageTitle.Create"] = "Yeni Duyuru",
                 ["Plugins.Widgets.AnnouncementBar.PageTitle.Edit"] = "Duyuru Düzenle",
@@ -69,7 +86,19 @@ namespace Nop.Plugin.Widgets.AnnouncementBar
                 ["Plugins.Widgets.AnnouncementBar.Validation.DisplayOrderInvalid"] = "Display Order alanı geçerli bir sayı olmalıdır.",
 
                 ["Plugins.Widgets.AnnouncementBar.Boolean.Yes"] = "Evet",
-                ["Plugins.Widgets.AnnouncementBar.Boolean.No"] = "Hayır"
+                ["Plugins.Widgets.AnnouncementBar.Boolean.No"] = "Hayır",
+
+                ["Plugins.Widgets.AnnouncementBar.Settings.Fields.IsEnabled"] = "Enable plugin",
+                ["Plugins.Widgets.AnnouncementBar.Settings.Fields.BackgroundColor"] = "Background color",
+                ["Plugins.Widgets.AnnouncementBar.Settings.Help.BackgroundColor"] = "Enter color in hex format. Example: #111111"
+                
+
+            });
+
+            await _settingService.SaveSettingAsync(new AnnouncementBarSettings
+            {
+                IsEnabled = false,
+                BackgroundColor = "#111111"
             });
 
             await base.InstallAsync();

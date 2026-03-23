@@ -10,9 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\Nop.Core\Nop.Core.csproj" />
-    <ProjectReference Include="..\..\Libraries\Nop.Data\Nop.Data.csproj" />
-    <ProjectReference Include="..\..\Libraries\Nop.Services\Nop.Services.csproj" />
+    <ClearPluginAssemblies Include="$(OutDir)\Nop.Core.dll" />
+    <ClearPluginAssemblies Include="$(OutDir)\Nop.Data.dll" />
+    <ClearPluginAssemblies Include="$(OutDir)\Nop.Services.dll" />
+  </ItemGroup>
+
+  <Target Name="NopTarget" AfterTargets="Build">
+    <Delete Files="@(ClearPluginAssemblies)" />
+  </Target>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Presentation\Nop.Web.Framework\Nop.Web.Framework.csproj" />
   </ItemGroup>
 

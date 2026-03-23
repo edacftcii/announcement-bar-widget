@@ -51,6 +51,7 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Factories
                     Id = x.Id,
                     Text = x.Text,
                     Color = x.Color,
+                     LinkUrl = x.LinkUrl,
                     DisplayOrder = x.DisplayOrder,
                     IsActive = x.IsActive
                 }).ToAsyncEnumerable());
@@ -74,8 +75,10 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Factories
                 Id = entity.Id,
                 Text = entity.Text,
                 Color = entity.Color,
+                LinkUrl = entity.LinkUrl,
                 DisplayOrder = entity.DisplayOrder,
                 IsActive = entity.IsActive
+                
             });
         }
 
@@ -85,8 +88,10 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Factories
 
             entity.Text = model.Text;
             entity.Color = model.Color;
+            entity.LinkUrl = model.LinkUrl;
             entity.DisplayOrder = model.DisplayOrder;
-            entity.IsActive = model.IsActive;
+            entity.IsActive = model.IsActive; ;
+            
 
             return Task.FromResult(entity);
         }

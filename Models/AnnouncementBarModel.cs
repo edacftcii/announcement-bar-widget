@@ -10,6 +10,8 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Models
 
         public string Color { get; set; }
 
+        public string LinkUrl { get; set; }
+
         #endregion
     }
 
@@ -17,7 +19,10 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Models
     {
         #region Properties
 
+        public string BackgroundColor { get; set; }
+
         public IList<AnnouncementBarItemModel> Items { get; set; } = new List<AnnouncementBarItemModel>();
+
 
         #endregion
     }

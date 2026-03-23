@@ -6,7 +6,7 @@
         .announcement-bar-wrapper {
             width: 100%;
             overflow: hidden;
-            background: #111111;
+            background: @(string.IsNullOrWhiteSpace(Model.BackgroundColor) ? "#111111" : Model.BackgroundColor);
             height: 56px;
             line-height: 56px;
             position: relative;
@@ -40,29 +40,42 @@
         }
 
         @@keyframes announcement-bar-slide {
-            0% {
-                transform: translateX(0);
-            }
-
-            100% {
-                transform: translateX(-100%);
-            }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
         }
     </style>
 
     <div class="announcement-bar-wrapper">
         <div class="announcement-bar-track">
+
             @for (var i = 0; i < Model.Items.Count; i++)
             {
-                <span class="announcement-bar-item" style="color: @(Model.Items[i].Color);">
-                    @Model.Items[i].Text
-                </span>
+                var item = Model.Items[i];
+                var hasLink = !string.IsNullOrWhiteSpace(item.LinkUrl);
+
+                if (hasLink)
+                {
+                    <a class="announcement-bar-item"
+                       href="@item.LinkUrl"
+                       style="color: @(item.Color); text-decoration: none;"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        @item.Text
+                    </a>
+                }
+                else
+                {
+                    <span class="announcement-bar-item" style="color: @(item.Color);">
+                        @item.Text
+                    </span>
+                }
 
                 @if (i < Model.Items.Count - 1)
                 {
                     <span class="announcement-bar-separator">✦</span>
                 }
             }
+
         </div>
     </div>
 }

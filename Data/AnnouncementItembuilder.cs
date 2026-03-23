@@ -14,7 +14,8 @@ namespace Nop.Plugin.Widgets.AnnouncementBar.Data
                 .WithColumn(nameof(AnnouncementItem.Text)).AsString(1000).NotNullable()
                 .WithColumn(nameof(AnnouncementItem.Color)).AsString(50).Nullable()
                 .WithColumn(nameof(AnnouncementItem.DisplayOrder)).AsInt32().NotNullable()
-                .WithColumn(nameof(AnnouncementItem.IsActive)).AsBoolean().NotNullable();
+                .WithColumn(nameof(AnnouncementItem.IsActive)).AsBoolean().NotNullable()
+                .WithColumn(nameof(AnnouncementItem.LinkUrl)).AsString(1000).Nullable();
         }
 
         #endregion

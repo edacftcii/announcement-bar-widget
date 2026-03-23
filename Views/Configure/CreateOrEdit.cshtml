@@ -6,15 +6,15 @@
 
     var pageTitleCreate = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.PageTitle.Create");
     var pageTitleEdit = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.PageTitle.Edit");
-    var cardInfoTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Card.Info");
-
-    var fieldText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Text");
-    var fieldColor = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Color");
-    var fieldDisplayOrder = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.DisplayOrder");
-    var fieldIsActive = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.IsActive");
 
     var saveText = await localizationService.GetResourceAsync("Admin.Common.Save");
     var backToListText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Button.BackToList");
+
+    var textLabel = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Text");
+    var colorLabel = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Color");
+    var linkUrlLabel = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.LinkUrl");
+    var displayOrderLabel = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.DisplayOrder");
+    var isActiveLabel = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.IsActive");
 
     ViewBag.PageTitle = Model.Id > 0 ? pageTitleEdit : pageTitleCreate;
 
@@ -36,7 +36,7 @@
                 <i class="far fa-save"></i>
                 @saveText
             </button>
-            <a href="@Url.Action("Configure", "AnnouncementBar", new { area = "Admin" })" class="btn btn-default">
+            <a href="@Url.Action("Manage", "AnnouncementBar", new { area = "Admin" })" class="btn btn-default">
                 <i class="fas fa-arrow-left"></i>
                 @backToListText
             </a>
@@ -45,17 +45,12 @@
 
     <section class="content">
         <div class="container-fluid">
-            <nop-cards id="announcement-bar-item-cards">
-                <nop-card asp-name="announcement-bar-item-info"
-                          asp-icon="fas fa-info-circle"
-                          asp-title="@cardInfoTitle"
-                          asp-hide-block-attribute-name="AnnouncementBarItemInfo.Hide"
-                          asp-hide="false"
-                          asp-advanced="false">
+            <div class="card card-default">
+                <div class="card-body">
 
                     <div class="form-group row">
                         <div class="col-md-3">
-                            <label for="Text">@fieldText</label>
+                            <label for="Text">@textLabel</label>
                         </div>
                         <div class="col-md-9">
                             <input id="Text" name="Text" class="form-control" value="@Model.Text" />
@@ -65,44 +60,47 @@
 
                     <div class="form-group row">
                         <div class="col-md-3">
-                            <label for="Color">@fieldColor</label>
+                            <label for="Color">@colorLabel</label>
                         </div>
                         <div class="col-md-9">
-                            <input id="Color"
-                                   name="Color"
-                                   class="form-control"
-                                   value="@Model.Color"
-                                   placeholder="#28a745" />
+                            <input id="Color" name="Color" class="form-control" value="@Model.Color" placeholder="#ffffff" />
+                            <span asp-validation-for="Color"></span>
                         </div>
                     </div>
 
                     <div class="form-group row">
                         <div class="col-md-3">
-                            <label for="DisplayOrder">@fieldDisplayOrder</label>
+                            <label for="LinkUrl">@linkUrlLabel</label>
                         </div>
                         <div class="col-md-9">
-                            <input id="DisplayOrder"
-                                   name="DisplayOrder"
-                                   type="number"
-                                   class="form-control"
-                                   value="@Model.DisplayOrder" />
+                            <input id="LinkUrl" name="LinkUrl" class="form-control" value="@Model.LinkUrl" placeholder="https://example.com" />
+                            <span asp-validation-for="LinkUrl"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <label for="DisplayOrder">@displayOrderLabel</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input id="DisplayOrder" name="DisplayOrder" type="number" class="form-control" value="@Model.DisplayOrder" />
                             <span asp-validation-for="DisplayOrder"></span>
                         </div>
                     </div>
 
                     <div class="form-group row">
                         <div class="col-md-3">
-                            <label>@fieldIsActive</label>
+                            <label for="IsActive">@isActiveLabel</label>
                         </div>
                         <div class="col-md-9">
-                            <div style="padding-top: 8px;">
-                                @Html.CheckBoxFor(m => m.IsActive)
-                            </div>
+                            <input id="IsActive" name="IsActive" type="checkbox" value="true" @(Model.IsActive ? "checked" : "") />
+                            <input name="IsActive" type="hidden" value="false" />
+                            <span asp-validation-for="IsActive"></span>
                         </div>
                     </div>
 
-                </nop-card>
-            </nop-cards>
+                </div>
+            </div>
         </div>
     </section>
 </form>

@@ -1,96 +1,71 @@
-@model Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemSearchModel
-@using Nop.Web.Framework.Models.DataTables
+@model Nop.Plugin.Widgets.AnnouncementBar.Models.ConfigurationModel
 @inject Nop.Services.Localization.ILocalizationService localizationService
 
 @{
-    Layout = "_AdminLayout";
+    Layout = "_ConfigurePlugin";
 
-    var pageTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Menu.Title");
-    var addNewText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Button.AddNew");
-    var cardListTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Card.List");
-
-    var fieldText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Text");
-    var fieldColor = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.Color");
-    var fieldDisplayOrder = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.DisplayOrder");
-    var fieldIsActive = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Fields.IsActive");
-
-    var editText = await localizationService.GetResourceAsync("Admin.Common.Edit");
-    var deleteText = await localizationService.GetResourceAsync("Admin.Common.Delete");
-
-    ViewBag.PageTitle = pageTitle;
+    var cardSettingsTitle = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Card.Settings");
+    var saveText = await localizationService.GetResourceAsync("Admin.Common.Save");
+    var manageItemsText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Menu.ManageItems");
+    var enabledText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Settings.Fields.IsEnabled");
+    var backgroundColorText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Settings.Fields.BackgroundColor");
+    var backgroundHelpText = await localizationService.GetResourceAsync("Plugins.Widgets.AnnouncementBar.Settings.Help.BackgroundColor");
 }
 
-<div class="content-header clearfix">
-    <h1 class="float-left">
-        @pageTitle
-    </h1>
-    <div class="float-right">
-        <a href="@Url.Action("Create", "AnnouncementBar", new { area = "Admin" })" class="btn btn-primary">
-            <i class="fas fa-plus-square"></i>
-            @addNewText
-        </a>
-    </div>
-</div>
+<form asp-area="Admin" asp-controller="AnnouncementBar" asp-action="Configure" method="post">
+    @Html.AntiForgeryToken()
 
-<section class="content">
-    <div class="container-fluid">
-        <nop-cards id="announcement-bar-cards">
-            <nop-card asp-name="announcement-bar-list"
-                      asp-icon="fas fa-bullhorn"
-                      asp-title="@cardListTitle"
-                      asp-hide-block-attribute-name="AnnouncementBarList.Hide"
-                      asp-hide="false"
-                      asp-advanced="false">
+    <nop-cards id="announcement-bar-settings-cards">
+        <nop-card asp-name="announcement-bar-settings"
+                  asp-icon="fas fa-cog"
+                  asp-title="@cardSettingsTitle"
+                  asp-hide-block-attribute-name="AnnouncementBarSettings.Hide"
+                  asp-hide="false"
+                  asp-advanced="false">
 
-                <div class="card-body">
-                    @await Html.PartialAsync("Table", new DataTablesModel
-                    {
-                        Name = "announcement-bar-grid",
-                        UrlRead = new DataUrl("~/Admin/AnnouncementBar/List"),
-                        UrlDelete = new DataUrl("~/Admin/AnnouncementBar/Delete"),
-                        Length = Model.PageSize,
-                        LengthMenu = Model.AvailablePageSizes,
-                        ColumnCollection = new List<ColumnProperty>
-                        {
-                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Text))
-                            {
-                                Title = fieldText
-                            },
-                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Color))
-                            {
-                                Title = fieldColor
-                            },
-                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.DisplayOrder))
-                            {
-                                Title = fieldDisplayOrder,
-                                Width = "120"
-                            },
-                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.IsActive))
-                            {
-                                Title = fieldIsActive,
-                                Width = "120",
-                                ClassName = NopColumnClassDefaults.CenterAll,
-                                Render = new RenderBoolean()
-                            },
-                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Id))
-                            {
-                                Title = editText,
-                                Width = "100",
-                                ClassName = NopColumnClassDefaults.Button,
-                                Render = new RenderButtonEdit(new DataUrl("~/Admin/AnnouncementBar/Edit/"))
-                            },
-                            new ColumnProperty(nameof(Nop.Plugin.Widgets.AnnouncementBar.Models.AnnouncementItemModel.Id))
-                            {
-                                Title = deleteText,
-                                Width = "100",
-                                ClassName = NopColumnClassDefaults.Button,
-                                Render = new RenderButtonRemove(deleteText)
-                            }
-                        }
-                    })
+            <div class="card-body">
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label for="IsEnabled" class="col-form-label pt-0">@enabledText</label>
+                    </div>
+                    <div class="col-md-9">
+                        <div style="padding-top: 8px;">
+                            @Html.CheckBoxFor(m => m.IsEnabled)
+                            <span asp-validation-for="IsEnabled"></span>
+                        </div>
+                    </div>
                 </div>
 
-            </nop-card>
-        </nop-cards>
-    </div>
-</section>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label for="BackgroundColor" class="col-form-label pt-0">@backgroundColorText</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input id="BackgroundColor"
+                               name="BackgroundColor"
+                               class="form-control"
+                               value="@Model.BackgroundColor"
+                               placeholder="#111111" />
+                        <span asp-validation-for="BackgroundColor"></span>
+                        <small class="form-text text-muted">@backgroundHelpText</small>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i class="far fa-save"></i>
+                    @saveText
+                </button>
+
+                <a href="@Url.Action("Manage", "AnnouncementBar", new { area = "Admin" })" class="btn btn-default">
+                    <i class="fas fa-list"></i>
+                    @manageItemsText
+                </a>
+            </div>
+
+        </nop-card>
+    </nop-cards>
+</form>
